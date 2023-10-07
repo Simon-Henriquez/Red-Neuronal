@@ -2,9 +2,11 @@
 > Atención este programa tiene muchos ejercicios de Algebra Linear. No nos hacemos responsables por los **daños** que le pueda llegar a causar la lectura del código.
 Creación de *Redes Neuronales* usando la librería numpy.
 Programa realizado para el Laboratorio de Inteligencia Artificial con el profesor **Cristián Inzulza Inzulza**.
+
 Desarrolladores:
-- Felipe Mancilla
-- Simón Henríquez
+: Felipe Mancilla
+: Simón Henríquez
+
 # Cómo Usar el Código
 ## Modulo funciones_NN.py
 En este package están las funciones de `Agregación`, `Activación` y `Coste` que estan habilitadas por ahora para implementarlas en la red neuronal.
