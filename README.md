@@ -3,9 +3,9 @@
 Creación de *Redes Neuronales* usando la librería numpy.
 Programa realizado para el Laboratorio de Inteligencia Artificial con el profesor **Cristián Inzulza Inzulza**.
 
-Desarrolladores:
-: Felipe Mancilla
-: Simón Henríquez
+**Desarrolladores**
+- Felipe Mancilla
+- Simón Henríquez
 
 # Cómo Usar el Código
 ## Modulo funciones_NN.py
