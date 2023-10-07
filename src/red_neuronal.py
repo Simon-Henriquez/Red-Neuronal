@@ -23,7 +23,6 @@ from funciones_NN import (
     FuncionCoste,
     ErrorCuadraticoMedio
 )
-import data
 
 class CapaEntradaError(Exception):
     pass
@@ -243,31 +242,16 @@ class Entrenamiento:
         self.errores = []
 
     def entrenar_red(self):
-        for e in range(self.epocas):
+        for _ in range(self.epocas):
             for index, datos in enumerate(self.datos_entrenamiento):
                 datos = np.array([datos]).T
-                self._descenso_gradiente(datos, index)
+                self._propagacion_hacia_atras(self._obtener_gradientes(datos, index))
 
-    def _descenso_gradiente(self, datos_entrada: NDArray, indice: int):
-        salida_red = self.red_neuronal.propagacion_adelante(datos_entrada, True)
-        error = self.funcion_coste.calcular_coste(
-            salida_red["salida_red"],
-            np.array([self.salidas_esperadas[indice]]).T
-        )
-        self.errores.append(error)
-        derivada_error = self.funcion_coste.calcular_derivada(
-            salida_red["salida_red"],
-            np.array([self.salidas_esperadas[indice]]).T
-        )
-        derivadas = salida_red["derivadas"]
-        derivadas.append(derivada_error)
-        self._actualizar_pesos(derivadas)
-
-    def _actualizar_pesos(self, derivadas: list[NDArray]):
+    def _propagacion_hacia_atras(self, derivadas: list[NDArray]):
         base = derivadas.pop(-1)
         for capa in self.red_neuronal.capas[:0:-1]:
             base = base * derivadas.pop(-1)
-            self._actualizar_capa(capa, derivadas=base * derivadas.pop(-1))
+            self._actualizar_pesos(capa, derivadas=base * derivadas.pop(-1))
             base = base * derivadas.pop(-1)
             base = np.array(
                 [[
@@ -279,13 +263,26 @@ class Entrenamiento:
             base = np.delete(base, -1, 1)
             base = base.T
 
-    def _actualizar_capa(self, capa: Capa, derivadas: NDArray):
-        for index, neurona in enumerate(capa.neuronas):
-            self._actualizar_neurona(neurona, derivada=derivadas[index,:])
+    def _obtener_gradientes(self, datos_entrada: NDArray, indice: int) -> list[NDArray]:
+        salida_red = self.red_neuronal.propagacion_adelante(datos_entrada, requiere_gradiente=True)
+        error = self.funcion_coste.calcular_coste(
+            salida_red["salida_red"],
+            np.array([self.salidas_esperadas[indice]]).T
+        )
+        self.errores.append(error)
+        derivada_error = self.funcion_coste.calcular_derivada(
+            salida_red["salida_red"],
+            np.array([self.salidas_esperadas[indice]]).T
+        )
+        derivadas = salida_red["derivadas"]
+        derivadas.append(derivada_error)
+        return derivadas
 
-    def _actualizar_neurona(self, neurona: Neurona, derivada: NDArray):
-        neurona.pesos = neurona.pesos - (self.tasa_aprendizaje * derivada[:-1])
-        neurona.bias = neurona.bias - (self.tasa_aprendizaje * derivada[-1])
+    def _actualizar_pesos(self, capa: Capa, derivadas: NDArray):
+        for index, neurona in enumerate(capa.neuronas):
+            neurona.pesos = neurona.pesos - (self.tasa_aprendizaje * derivadas[index,:][:-1])
+            neurona.bias = neurona.bias - (self.tasa_aprendizaje * derivadas[index,:][-1])
+
 
 def red_neuronal_pesos_setter(
         matriz_parametros: list[NDArray],
@@ -349,7 +346,7 @@ def example_app():
         salidas_validacion,
         np.array([salidas_esperadas[0]]),
         red_neuronal,
-        epocas=3500,
+        epocas=100,
         tasa_aprendizaje=0.5
     )
     entrenamiento.entrenar_red()
@@ -358,8 +355,7 @@ def example_app():
     print("\n"+"#"*50)
     print("\nUsando la Red con Arquitectura:\n", red_neuronal)
     result = red_neuronal.propagacion_adelante(
-        np.array([datos_para_predecir[0]]).T,
-        False
+        np.array([datos_para_predecir[0]]).T
     )
     print("\nResultado:\n", result["salida_red"])
 
