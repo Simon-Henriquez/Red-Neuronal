@@ -45,12 +45,12 @@ Si le quedan dudas de como funciona una red neuronal vea el siguiente tutorial q
 4. Para entrenar la red debe crear un objeto Entrenamiento pasandole almenos cinco argumentos.
 	```python
 	entrenamiento = Entrenamiento(
-        entradas_entrenamiento,
-        salidas_entrenamiento,
-        entradas_validacion,
+		entradas_entrenamiento,
+		salidas_entrenamiento,
+		entradas_validacion,
 		salidas_validacion,
 		red_neuronal
-    )
+	)
 	```
 	> Por lo general los datos de validacion en tamaño son como un 10% de los datos de entrenamiento.
 	Luego para que comienze el entrenamiento:
