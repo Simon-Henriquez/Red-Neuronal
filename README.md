@@ -49,7 +49,7 @@ Si le quedan dudas de como funciona una red neuronal vea el siguiente tutorial q
         salidas_entrenamiento,
         entradas_validacion,
 		salidas_validacion,
-        red_neuronal
+		red_neuronal
     )
 	```
 	> Por lo general los datos de validacion en tamaño son como un 10% de los datos de entrenamiento.
