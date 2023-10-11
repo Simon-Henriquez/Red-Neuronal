@@ -62,7 +62,6 @@ def dibujar_una_imagen(
     plt.show()
 
 if __name__ == "__main__":
-    print(datos_entrenamiento()[0][0].shape)
-    print(784*2)
-    # print(datos_validacion())
-    # print(datos_testeo())
+    print(len(datos_entrenamiento()))
+    print(len(datos_validacion()))
+    print(len(datos_testeo()))

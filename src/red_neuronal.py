@@ -126,9 +126,7 @@ class Capa:
 
         return {
             "salidas_capa": salidas_capa,
-            "parametros_capa": parametros_capa,
-            "derivadas_capa": derivadas_capa,
-            "derivadas_parametros": derivadas_parametros
+            "derivadas": [parametros_capa, derivadas_parametros, derivadas_capa]
         }
 
     def __len__(self) -> int:
@@ -172,7 +170,7 @@ class RedNeuronal:
             datos_entrada: NDArray) -> dict[str, NDArray]:
 
         salida_capa_anterior = {"salidas_capa": datos_entrada}
-        derivadas_parametros = np.vstack((datos_entrada, np.array([[1]])))
+        derivadas_parametros = np.vstack((datos_entrada, np.array([[1]]))) #aaaaa
         salida_capa_anterior["derivadas_parametros"] = derivadas_parametros
         derivadas = []
 
@@ -180,9 +178,7 @@ class RedNeuronal:
             salida_capa_actual = capa.calcular_salida_con_gradiente(
                 salida_capa_anterior["salidas_capa"]
             )
-            derivadas.append(salida_capa_actual["parametros_capa"])
-            derivadas.append(salida_capa_actual["derivadas_parametros"])
-            derivadas.append(salida_capa_actual["salidas_capa"])
+            derivadas.extend(salida_capa_actual["derivadas"])
             salida_de_la_red = salida_capa_actual["salidas_capa"]
             salida_capa_anterior = salida_capa_actual
 
@@ -207,8 +203,7 @@ class RedNeuronal:
             for neurona in capa.neuronas:
                 print(f"Neurona {neurona}")
                 try:
-                    for pesos in neurona.pesos:
-                        print(pesos)
+                    print(neurona.pesos)
                     print(neurona.bias)
                 except:
                     pass
@@ -242,10 +237,11 @@ class Entrenamiento:
         self.errores = []
 
     def entrenar_red(self):
-        for _ in range(self.epocas):
+        for ii in range(self.epocas):
             for index, datos in enumerate(self.datos_entrenamiento):
                 datos = np.array([datos]).T
-                self._propagacion_hacia_atras(self._obtener_gradientes(datos, index))
+                gradientes = self._obtener_gradientes(datos, index)
+                self._propagacion_hacia_atras(gradientes)
 
     def _propagacion_hacia_atras(self, derivadas: list[NDArray]):
         base = derivadas.pop(-1)
@@ -259,7 +255,6 @@ class Entrenamiento:
                     for i in range(base.shape[1])
                 ]]
             )
-            # base = np.delete(base, slice(1), -1)
             base = np.delete(base, -1, 1)
             base = base.T
 
@@ -308,17 +303,10 @@ def red_neuronal_pesos_setter(
 def example_app():
     # Datos para utilizar la red
     datos_para_predecir = np.array(
-        [[0.05, 0.1],
-        [0.04, 0.55],
-        [0.045, 0.6],
-        [0.051, 0.59]]
+        [[0.05, 0.1]]
     )
     salidas_esperadas = np.array(
-        [[0.01, 0.99],
-        [0.011, 0.89],
-        [0.015, 0.93],
-        [0.023, 0.9]]
-    )
+        [[0.01, 0.99]])
     salidas_validacion = salidas_esperadas
 
     # Creando Capas
@@ -336,15 +324,15 @@ def example_app():
     # Opcional
     # Solo por si quiere definir usted mismo los pesos iniciales.
     # De lo contrario comente las siguientes 3 líneas.
-    pesos_capa1 = np.array(([0.15, 0.25, 0.35], [0.20, 0.30, 0.35]))
-    pesos_capa2 = np.array(([0.40, 0.50, 0.6], [0.45, 0.55, 0.6]))
+    pesos_capa1 = np.array(([0.15, 0.20, 0.35], [0.25, 0.30, 0.35]))
+    pesos_capa2 = np.array(([0.40, 0.45, 0.6], [0.50, 0.55, 0.6]))
     red_neuronal_pesos_setter([pesos_capa1, pesos_capa2], red_neuronal)
 
     # Entrenando Red
     entrenamiento = Entrenamiento(
-        np.array([datos_para_predecir[0]]),
+        datos_para_predecir,
         salidas_validacion,
-        np.array([salidas_esperadas[0]]),
+        salidas_esperadas,
         red_neuronal,
         epocas=100,
         tasa_aprendizaje=0.5
@@ -354,9 +342,7 @@ def example_app():
     # Usando la Red
     print("\n"+"#"*50)
     print("\nUsando la Red con Arquitectura:\n", red_neuronal)
-    result = red_neuronal.propagacion_adelante(
-        np.array([datos_para_predecir[0]]).T
-    )
+    result = red_neuronal.propagacion_adelante(datos_para_predecir.T)
     print("\nResultado:\n", result["salida_red"])
 
 if __name__ == '__main__':

@@ -5,3 +5,4 @@ __pycache__
 **/*.local
 **/*.git
 **/*.DS_Store
+xd.py

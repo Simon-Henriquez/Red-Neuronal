@@ -63,5 +63,18 @@ Si le quedan dudas de como funciona una red neuronal vea el siguiente tutorial q
 
 	print(resultado["salida_red"])
 	```
+## Jupyter Notebook imagen.ipynb
+Este notebook tiene un ejemplo de como se ve una imágen de los números escritos a mano.
+
 ## Jupyter Notebook mnist.ipynb
-Este notebook también es un ejemplo de mayor complejidad en el que se crea una red neuronal capaz de predecir el número que se encuentra en una imágen de 28 x 28 pixeles.
+Este notebook también es un ejemplo de mayor complejidad en el que se crea una red neuronal capaz de predecir el número escrito a mano que se encuentra en una imágen de 28 x 28 pixeles.
+
+## data.py
+Este modulo tiene funciones que son usadas para obtener los datos de los csv para entrenar, validar y testear una red de reconocimiento de imagenes escritas a mano en el jupyter notebook *mnist.ipynb*.
+
+## Como ejecutar los test
+Para ejecutar los test primero debe ubicarse en el directorio src.
+```
+$ cd src
+$ pipenv run python -m unittest tests/integration/test_red_neuronal.py
+```
