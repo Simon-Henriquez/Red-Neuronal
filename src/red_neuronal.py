@@ -45,10 +45,10 @@ class Neurona:
         self.bias = np.array([np.random.randn(1)])
 
     def calcular_salida(self, datos_entrada: NDArray) -> float:
-        return self.funcion_activacion.calcular_resultado(datos_entrada)
+        return self.funcion_activacion.adelante(datos_entrada)
 
     def calcular_agregacion(self, datos_entrada: NDArray) -> float:
-        return self.funcion_agregacion.calcular_resultado(
+        return self.funcion_agregacion.adelante(
             datos_entrada,
             self.pesos,
             self.bias
@@ -113,7 +113,7 @@ class Capa:
             ), axis=0)
             derivadas_capa = np.concatenate((
                 derivadas_capa,
-                neurona.funcion_activacion.calcular_derivada(agregacion)
+                neurona.funcion_activacion.atras(agregacion)
             ), axis=0)
             derivada_parametro = np.concatenate(
                 (datos_entrada.T, np.array([[1]])),
@@ -260,12 +260,12 @@ class Entrenamiento:
 
     def _obtener_gradientes(self, datos_entrada: NDArray, indice: int) -> list[NDArray]:
         salida_red = self.red_neuronal.propagacion_adelante(datos_entrada, requiere_gradiente=True)
-        error = self.funcion_coste.calcular_coste(
+        error = self.funcion_coste.adelante(
             salida_red["salida_red"],
             np.array([self.salidas_esperadas[indice]]).T
         )
         self.errores.append(error)
-        derivada_error = self.funcion_coste.calcular_derivada(
+        derivada_error = self.funcion_coste.atras(
             salida_red["salida_red"],
             np.array([self.salidas_esperadas[indice]]).T
         )
