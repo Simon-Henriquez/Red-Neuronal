@@ -330,8 +330,6 @@ def red_neuronal_pesos_setter(
 
 def example_app():
     # Entrenar red para que desde una entrada en grados celsius se haga su prediccion en fahrenheit
-    # celsius = np.array([[0]])
-    # fahrenheit = np.array([[32]])
     celsius = np.array([[0.0]])  # Entradas en grados Celsius
     fahrenheit = np.array([[32.0]])  # Salidas esperadas en grados Fahrenheit
 
@@ -344,9 +342,9 @@ def example_app():
     salidas_validacion = salidas_esperadas
 
     # Creando Capas
-    capa_entrada = Capa(1)
+    capa_entrada = Capa(2)
     capa_oculta1 = Capa(2, Ponderacion, Relu)
-    capa_salida = Capa(1, Ponderacion, Linear)
+    capa_salida = Capa(2, Ponderacion, Linear)
 
     # Creando Red con Capas
     red_neuronal = RedNeuronal(
@@ -358,18 +356,18 @@ def example_app():
     # Opcional
     # Solo por si quiere definir usted mismo los pesos iniciales.
     # De lo contrario comente las siguientes 3 líneas.
-    # pesos_capa1 = np.array(([0.15, 0.20, 0.35], [0.25, 0.30, 0.35]))
-    # pesos_capa2 = np.array(([0.40, 0.45, 0.6], [0.50, 0.55, 0.6]))
-    # red_neuronal_pesos_setter([pesos_capa1, pesos_capa2], red_neuronal)
+    pesos_capa1 = np.array(([0.15, 0.20, 0.35], [0.25, 0.30, 0.35]))
+    pesos_capa2 = np.array(([0.40, 0.45, 0.6], [0.50, 0.55, 0.6]))
+    red_neuronal_pesos_setter([pesos_capa1, pesos_capa2], red_neuronal)
 
     # Entrenando Red
     entrenamiento = Entrenamiento(
-        celsius,
-        fahrenheit,
-        fahrenheit,
+        datos_para_predecir,
+        salidas_validacion,
+        salidas_esperadas,
         red_neuronal,
         epocas=100,
-        tasa_aprendizaje=0.05
+        tasa_aprendizaje=0.5
     )
     entrenamiento.entrenar_red()
     red_neuronal.printear_red()
@@ -377,33 +375,11 @@ def example_app():
 
     # Usando la Red
     print("\n"+"#"*50)
-    # result = red_neuronal.propagacion_adelante(datos_para_predecir.T)
+    result = red_neuronal.propagacion_adelante(datos_para_predecir.T)
 
     print("\nUsando la Red con Arquitectura:\n", red_neuronal)
 
-    # Predicción 0 grados
-    celsius_predecir = np.array([[0]])
-    print("\nEntrada en °C\n", celsius_predecir[0][0])
-    resultado = red_neuronal.propagacion_adelante(celsius_predecir)
-    print("\nResultado en fahrenheit:\n", resultado["salida_red"][0][0])
-
-    # Predicción 5 grados
-    celsius_predecir = np.array([[5]])
-    print("\nEntrada en °C\n", celsius_predecir[0][0])
-    resultado = red_neuronal.propagacion_adelante(celsius_predecir)
-    print("\nResultado en fahrenheit:\n", resultado["salida_red"][0][0])
-
-    # Predicción 10 grados
-    celsius_predecir = np.array([[10]])
-    print("\nEntrada en °C\n", celsius_predecir[0][0])
-    resultado = red_neuronal.propagacion_adelante(celsius_predecir)
-    print("\nResultado en fahrenheit:\n", resultado["salida_red"][0][0])
-
-    # entrenamiento.perdida_vs_epoca()
-
-    # print("\nResultado:\n", result["salida_red"])
-    # red_neuronal.printear_red()
-    # cargar_red('ejemplo.csv', red_neuronal)
+    print("\nResultado:\n", result["salida_red"])
 
 if __name__ == '__main__':
     print("\nAutores: [" + __author__ + "]")
