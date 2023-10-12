@@ -80,7 +80,7 @@ class Capa:
             self,
             datos_entrada: NDArray) -> dict[str, NDArray]:
 
-        salidas_capa = np.empty((0,1), np.float32)
+        salidas_capa = np.empty((0,1), np.float64)
 
         for neurona in self.neuronas:
             agregacion = neurona.calcular_agregacion(datos_entrada)
