@@ -11,6 +11,8 @@ __author__ = "Simón Henríquez" + " / " + "Felipe Mancilla"
 
 import numpy as np
 from numpy.typing import NDArray
+import matplotlib.pyplot as plt
+import csv
 
 from funciones_NN import (
     FuncionActivacion,
@@ -204,7 +206,7 @@ class RedNeuronal:
                 print(f"Neurona {neurona}")
                 try:
                     print(neurona.pesos)
-                    print(neurona.bias)
+                    print("bias:", neurona.bias)
                 except:
                     pass
 
@@ -277,6 +279,33 @@ class Entrenamiento:
         for index, neurona in enumerate(capa.neuronas):
             neurona.pesos = neurona.pesos - (self.tasa_aprendizaje * derivadas[index,:][:-1])
             neurona.bias = neurona.bias - (self.tasa_aprendizaje * derivadas[index,:][-1])
+    
+    def perdida_vs_epoca(self):
+        """Este gráfico nos permite saber si es que hemos sobreentrenado la red"""
+
+        errores = [error[0][0] for error in self.errores]
+        epocas = range(1, self.epocas + 1)
+
+        plt.figure()
+        plt.plot(epocas, errores, marker='o', linestyle='-')
+        plt.title('Error vs. Época')
+        plt.xlabel('Época')
+        plt.ylabel('Error')
+        plt.grid(True)
+        plt.show()
+
+
+    def guardar_pesos(self, archivo_salida):
+        with open(archivo_salida, 'w', newline='') as archivo_csv:
+            escritor_csv = csv.writer(archivo_csv)
+            for index_capa, capa in enumerate(self.red_neuronal.capas):
+                for neurona in capa.neuronas:
+                    try:
+                        # Guardar el índice de la capa, el índice de la neurona, los pesos y el bias
+                        fila = [index_capa, neurona.pesos.tolist(), neurona.bias.tolist()]
+                        escritor_csv.writerow(fila)
+                    except:
+                        pass
 
 
 def red_neuronal_pesos_setter(
@@ -299,8 +328,11 @@ def red_neuronal_pesos_setter(
                 neurona.pesos = np.delete(nuevos_pesos, -1, 1)
                 neurona.bias = np.delete(nuevos_pesos, slice(0,-1), 1)
 
-
 def example_app():
+    # Entrenar red para que desde una entrada en grados celsius se haga su prediccion en fahrenheit
+    celsius = np.array([[0.0]])  # Entradas en grados Celsius
+    fahrenheit = np.array([[32.0]])  # Salidas esperadas en grados Fahrenheit
+
     # Datos para utilizar la red
     datos_para_predecir = np.array(
         [[0.05, 0.1]]
@@ -311,8 +343,8 @@ def example_app():
 
     # Creando Capas
     capa_entrada = Capa(2)
-    capa_oculta1 = Capa(2, Ponderacion, Sigmoide)
-    capa_salida = Capa(2, Ponderacion, Sigmoide)
+    capa_oculta1 = Capa(2, Ponderacion, Relu)
+    capa_salida = Capa(2, Ponderacion, Linear)
 
     # Creando Red con Capas
     red_neuronal = RedNeuronal(
@@ -338,11 +370,15 @@ def example_app():
         tasa_aprendizaje=0.5
     )
     entrenamiento.entrenar_red()
+    red_neuronal.printear_red()
+    entrenamiento.guardar_pesos('ejemplo.csv')
 
     # Usando la Red
     print("\n"+"#"*50)
-    print("\nUsando la Red con Arquitectura:\n", red_neuronal)
     result = red_neuronal.propagacion_adelante(datos_para_predecir.T)
+
+    print("\nUsando la Red con Arquitectura:\n", red_neuronal)
+
     print("\nResultado:\n", result["salida_red"])
 
 if __name__ == '__main__':
