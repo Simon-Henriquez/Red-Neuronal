@@ -26,6 +26,14 @@ from funciones_NN import (
     ErrorCuadraticoMedio
 )
 
+# Constantes
+FUNCIONES_ACTIVACION = {
+    "sigmoide": Sigmoide,
+    "relu": Relu,
+    "tanh": Tanh,
+    "linear": Linear
+}
+
 class CapaEntradaError(Exception):
     pass
 
@@ -43,7 +51,7 @@ class Neurona:
         self.funcion_agregacion = funcion_agregacion
 
     def acoplar_conexiones(self, cantidad_entradas: int):
-        self.pesos = np.array([np.random.randn(cantidad_entradas)])
+        self.pesos = np.random.uniform(low=-1, high=1, size=(1, cantidad_entradas))
         self.bias = np.array([np.random.randn(1)])
 
     def calcular_salida(self, datos_entrada: NDArray) -> float:
@@ -61,6 +69,9 @@ class Neurona:
             return self.pesos.shape[1]
         except:
             return 0
+
+    def __str__(self) -> str:
+        return f"Neurona con función de activacion: {self.funcion_activacion}"
 
 
 class Capa:
@@ -217,7 +228,6 @@ class RedNeuronal:
         return mensaje
 
 
-
 class Entrenamiento:
     def __init__(
             self,
@@ -236,14 +246,17 @@ class Entrenamiento:
         self.datos_entrenamiento = datos_entrenamiento
         self.datos_validacion = datos_validacion
         self.salidas_esperadas = salidas_esperadas
+        self.errores_epoca = []
         self.errores = []
 
     def entrenar_red(self):
-        for ii in range(self.epocas):
+        for _ in range(self.epocas):
             for index, datos in enumerate(self.datos_entrenamiento):
                 datos = np.array([datos]).T
                 gradientes = self._obtener_gradientes(datos, index)
                 self._propagacion_hacia_atras(gradientes)
+            self.errores.append(sum(self.errores_epoca)/len(self.errores_epoca))
+            self.errores_epoca = []
 
     def _propagacion_hacia_atras(self, derivadas: list[NDArray]):
         base = derivadas.pop(-1)
@@ -266,7 +279,7 @@ class Entrenamiento:
             salida_red["salida_red"],
             np.array([self.salidas_esperadas[indice]]).T
         )
-        self.errores.append(error)
+        self.errores_epoca.append(error)
         derivada_error = self.funcion_coste.atras(
             salida_red["salida_red"],
             np.array([self.salidas_esperadas[indice]]).T
@@ -285,7 +298,7 @@ class Entrenamiento:
 
         errores = [error[0][0] for error in self.errores]
         epocas = range(1, self.epocas + 1)
-
+        print("ultimo error: ",errores[-1])
         plt.figure()
         plt.plot(epocas, errores, marker='o', linestyle='-')
         plt.title('Error vs. Época')
@@ -295,18 +308,44 @@ class Entrenamiento:
         plt.show()
 
 
-    def guardar_pesos(self, archivo_salida):
-        with open(archivo_salida, 'w', newline='') as archivo_csv:
-            escritor_csv = csv.writer(archivo_csv)
-            for index_capa, capa in enumerate(self.red_neuronal.capas):
-                for neurona in capa.neuronas:
-                    try:
-                        # Guardar el índice de la capa, el índice de la neurona, los pesos y el bias
-                        fila = [index_capa, neurona.pesos.tolist(), neurona.bias.tolist()]
-                        escritor_csv.writerow(fila)
-                    except:
-                        pass
+def guardar_red(archivo_salida: str, red_neuronal: RedNeuronal) -> None:
+    with open(archivo_salida, mode='w', newline='') as archivo_csv:
+        escritor_csv = csv.writer(archivo_csv)
+        escritor_csv.writerow(['neuronas', 'activacion'])
 
+        escritor_csv.writerow([red_neuronal.capas[0].largo, "linear"])
+        for capa in red_neuronal.capas[1:]:
+            neuronas_de_la_capa = [[]]
+            for neurona in capa.neuronas:
+                x = neurona.pesos.tolist()[0]
+                x.append(neurona.bias.tolist()[0][0])
+                neuronas_de_la_capa[0].append(x)
+            neuronas_de_la_capa.append(neurona.funcion_activacion.__str__())
+            escritor_csv.writerow(neuronas_de_la_capa)
+
+def cargar_pesos(nombre_archivo: str) -> RedNeuronal:
+    funciones = {
+        "linear": Linear,
+        "relu": Relu,
+        "sigmoide": Sigmoide,
+        "tanh": Tanh,
+    }
+    with open(nombre_archivo, mode='r') as archivo_csv:
+        lector_csv = csv.reader(archivo_csv)
+        next(lector_csv)
+        capas = []
+        for fila in lector_csv:
+            capas.append(Capa(int(fila[0]), funcion_activacion=funciones[1]))
+            break
+        parametros = []
+        for fila in lector_csv:
+            lista = eval(fila[0])
+            capas.append(Capa(len(lista),funcion_activacion=FUNCIONES_ACTIVACION[fila[1]]))
+            parametros.append(np.array(lista))
+        red_neuronal = RedNeuronal(*capas)
+        red_neuronal_pesos_setter(parametros, red_neuronal)
+        red_neuronal.printear_red()
+    return red_neuronal
 
 def red_neuronal_pesos_setter(
         matriz_parametros: list[NDArray],
@@ -329,10 +368,6 @@ def red_neuronal_pesos_setter(
                 neurona.bias = np.delete(nuevos_pesos, slice(0,-1), 1)
 
 def example_app():
-    # Entrenar red para que desde una entrada en grados celsius se haga su prediccion en fahrenheit
-    celsius = np.array([[0.0]])  # Entradas en grados Celsius
-    fahrenheit = np.array([[32.0]])  # Salidas esperadas en grados Fahrenheit
-
     # Datos para utilizar la red
     datos_para_predecir = np.array(
         [[0.05, 0.1]]
@@ -343,8 +378,8 @@ def example_app():
 
     # Creando Capas
     capa_entrada = Capa(2)
-    capa_oculta1 = Capa(2, Ponderacion, Relu)
-    capa_salida = Capa(2, Ponderacion, Linear)
+    capa_oculta1 = Capa(2, Ponderacion, Sigmoide)
+    capa_salida = Capa(2, Ponderacion, Sigmoide)
 
     # Creando Red con Capas
     red_neuronal = RedNeuronal(
@@ -370,16 +405,14 @@ def example_app():
         tasa_aprendizaje=0.5
     )
     entrenamiento.entrenar_red()
-    red_neuronal.printear_red()
-    entrenamiento.guardar_pesos('ejemplo.csv')
 
     # Usando la Red
     print("\n"+"#"*50)
-    result = red_neuronal.propagacion_adelante(datos_para_predecir.T)
-
     print("\nUsando la Red con Arquitectura:\n", red_neuronal)
+    result = red_neuronal.propagacion_adelante(datos_para_predecir[0].T)
+    print(f"\nResultado: {datos_para_predecir[0].T}\n", result["salida_red"])
 
-    print("\nResultado:\n", result["salida_red"])
+    entrenamiento.perdida_vs_epoca()
 
 if __name__ == '__main__':
     print("\nAutores: [" + __author__ + "]")
