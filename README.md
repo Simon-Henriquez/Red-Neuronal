@@ -6,6 +6,7 @@ Programa realizado para el Laboratorio de Inteligencia Artificial con el profeso
 **Desarrolladores**
 - Felipe Mancilla
 - Simón Henríquez
+- Hugo Concha
 
 # Cómo Usar el Código
 ## Modulo funciones_NN.py
