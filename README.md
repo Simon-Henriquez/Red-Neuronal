@@ -1,7 +1,7 @@
 # Redes Neuronales de Scratch
 > Atención este programa tiene muchos ejercicios de Algebra Linear. No nos hacemos responsables por los **daños** que le pueda llegar a causar la lectura del código.
 Creación de *Redes Neuronales* usando la librería numpy.
-Programa realizado para el Laboratorio de Inteligencia Artificial con el profesor **Cristián Inzulza Inzulza**.
+Programa realizado para el Laboratorio de Inteligencia Artificial con el profesor **Cristián Inzulza Castro**.
 
 **Desarrolladores**
 - Felipe Mancilla
